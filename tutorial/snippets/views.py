@@ -12,6 +12,8 @@ from rest_framework import permissions
 from django.contrib.auth.models import User
 from rest_framework.reverse import reverse
 from rest_framework import renderers
+from rest_framework import  viewsets
+from rest_framework.decorators import detail_route
 # Create your views here.
 
 #Version - 1
@@ -96,7 +98,7 @@ class SnippetDetail(APIView):
 '''
 
 #Version - 3
-
+'''
 @api_view(['GET'])
 def api_root(request, format = None):
 	return Response({
@@ -133,3 +135,26 @@ class UserList(generics.ListAPIView):
 class UserDetail(generics.RetrieveAPIView): #just retrieve
 	queryset = User.objects.all()
 	serializer_class = UserSerializer
+
+'''
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = User.objects.all()
+	serializer_class = UserSerializer
+
+
+class SnippetViewSet(viewsets.ModelViewSet):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, )
+
+    #Notice that we've also used the @detail_route decorator to create a custom action, named highlight.
+    #This decorator can be used to add any custom endpoints that don't fit into the standard
+    @detail_route(renderer_classes = [renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+
+    def perform_create(self, serializer):
+        serializer.save(owner = self.request.user)
+
+

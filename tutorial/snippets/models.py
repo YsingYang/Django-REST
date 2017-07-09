@@ -25,14 +25,14 @@ class Snippet(models.Model):
 
 	def save(self, *args, **kwargs):
 		"""
-    		Use the `pygments` library to create a highlighted HTML
-    		representation of the code snippet.
-    		"""
+    	Use the `pygments` library to create a highlighted HTML
+    	representation of the code snippet.
+    	"""
 		lexer = get_lexer_by_name(self.language)
 		linenos = self.linenos and 'table' or False #???
 		options =  self.title and {'title' : self.title} or {}
 		formatters = HtmlFormatter(style = self.style, linenos = linenos, full = True, **options)
 		self.highlighted = highlight(self.code, lexer, formatters)
 		super(Snippet, self).save(*args, **kwargs)
-
+		snippets = Snippet.objects.all()
 
